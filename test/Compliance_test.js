@@ -36,10 +36,6 @@ describe('Compliance wrapper', () => {
   let registrar;
 
   before(async () => {
-    //accounts[0] = owner
-    //accounts[1] = kyc
-    //accounts[2] = legal delegate
-
     accounts = await web3Wrapper.getAvailableAddressesAsync();
   });
 
@@ -98,9 +94,7 @@ describe('Compliance wrapper', () => {
   });
 
   it('proposeTemplate, templateReputation, getTemplateAddressByProposal, cancelTemplateProposal, getAllTemplateProposals', async () => {
-
-
-    //subscribtion setup
+    //subscription setup
     let subscriptionID2 = null;
     const eventName2 = 'LogNewTemplateProposal';
     const indexedFilterValues2 = ["_securityToken"];
@@ -117,7 +111,7 @@ describe('Compliance wrapper', () => {
       });
     });
 
-    //subscribtion setup
+    //subscription setup
     let subscriptionID4 = null;
     const eventName4 = 'LogCancelTemplateProposal';
     const indexedFilterValues4 = ["_securityToken"];
@@ -144,16 +138,13 @@ describe('Compliance wrapper', () => {
 
     );
 
-
     // Propose Template
     await compliance.proposeTemplate(accounts[2], securityToken.address, templateAddress);
     const logs = await compliance.getLogs('LogNewTemplateProposal', {}, { fromBlock: 1 });
     assert.equal(logs[0].args._template, templateAddress, 'Template address does not match the logged version');
 
-
     let logNewTemplateProposal = await logNewTemplateProposalArgsPromise;
     assert.equal(logNewTemplateProposal._securityToken, securityToken.address, 'ST address not picked up from LogNewTemplateProposal event') //needs to be renamed from core
-
 
     // Reputation
     let templateReputation = await compliance.getTemplateReputation(templateAddress);
@@ -167,7 +158,6 @@ describe('Compliance wrapper', () => {
     let arrayOfTemplates = await compliance.getAllTemplateProposals(securityToken.address)
     assert.equal(arrayOfTemplates[0], templateAddress, 'Template address does not match the getter function return');
 
-
     await compliance.cancelTemplateProposal(accounts[2], securityToken.address, 0);
 
     let logCancleTemplateProposal = await logCancleTemplateProposalArgsPromise;
@@ -177,7 +167,6 @@ describe('Compliance wrapper', () => {
     assert.equal(addressShouldBeZero, 0, 'Proposal returned the wrong template address');
 
     await compliance.unsubscribeAll();
-
    });
 
 
@@ -190,15 +179,13 @@ describe('Compliance wrapper', () => {
   // and so me of the stuff has to match up
   // then we have an actual one in offeringProposals
   it('setSTO, proposeSTO, cancleSTO, getSTOProposal, getSTOAddressByProposal, getAllOfferingProposals', async () => {
-
-    //subscribtion setup
+    //subscription setup
     let subscriptionID3 = null;
     const eventName3 = 'LogNewContractProposal';
     const indexedFilterValues3 = ["_securityToken"];
 
     //the callback is passed into the filter.watch function, and is operated on when a new event comes in
     const logNewContractProposalArgsPromise = new Promise((resolve, reject) => {
-
       subscriptionID3 = compliance.subscribe(eventName3, indexedFilterValues3, (err, log) => {
         if (err !== null) {
           reject(err);
@@ -208,16 +195,13 @@ describe('Compliance wrapper', () => {
       });
     });
 
-
-
-    //subscribtion setup
+    //subscription setup
     let subscriptionID5 = null;
     const eventName5 = 'LogCancelContractProposal';
     const indexedFilterValues5 = ["_securityToken"];
 
     //the callback is passed into the filter.watch function, and is operated on when a new event comes in
     const logCancleContractProposalArgsPromise = new Promise((resolve, reject) => {
-
       subscriptionID5 = compliance.subscribe(eventName5, indexedFilterValues5, (err, log) => {
         if (err !== null) {
           reject(err);
@@ -227,17 +211,14 @@ describe('Compliance wrapper', () => {
       });
     });
 
-
     const owner = accounts[0];
     const legalDelegate = accounts[2];
     const kycProvider = accounts[1];
-
 
     // STO variables
     const auditor = accounts[4];
     const startTime = new BigNumber(web3.eth.getBlock('latest').timestamp).plus(200);
     const endTime = new BigNumber(web3.eth.getBlock('latest').timestamp).plus(2592000);
-
 
     await makeKYCProvider(customers, kycProvider);
 
@@ -282,7 +263,6 @@ describe('Compliance wrapper', () => {
       startTime,
       endTime,
     );
-
 
     let logNewContractProposal = await logNewContractProposalArgsPromise;
     assert.equal(logNewContractProposal._delegate, auditor, 'legal delegate not picked up from LogNewProposal event') //needs to be renamed from core
