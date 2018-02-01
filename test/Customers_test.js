@@ -83,7 +83,6 @@ describe('Customers wrapper', () => {
   });
 
   it('verifyCustomer, getCustomer, getLogs', async () => {
-    const owner = accounts[0]
     const kycProvider = accounts[1];
     const investor = accounts[2];
 
@@ -125,8 +124,7 @@ describe('Customers wrapper', () => {
 
 
   it('subscribe, unsubscribe, unsubscribeAll', async () => {
-
-    //subscribtion setup
+    //subscription setup
     let subscriptionID1 = null;
     const eventName1 = 'LogNewProvider';
     const indexedFilterValues1 = null;
@@ -142,7 +140,7 @@ describe('Customers wrapper', () => {
       });
     });
 
-    //subscribtion setup
+    //subscription setup
     let subscriptionID2 = null;
     const eventName2 = 'LogCustomerVerified';
     const indexedFilterValues2 = null;
@@ -159,8 +157,6 @@ describe('Customers wrapper', () => {
       });
     });
 
-
-    const owner = accounts[0]
     const kycProvider = accounts[1];
     const investor = accounts[2];
 
@@ -171,7 +167,6 @@ describe('Customers wrapper', () => {
     assert.equal(logNewProvider.name, 'Provider', 'Name of kycProvider wasnt found in event subscription');
     assert.equal(logNewProvider.details, '0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'Details wasnt found in event subscription'); //details hash from make_examples.js
     await customers.unsubscribe(subscriptionID1);
-
 
     await polyToken.approve(investor, customers.address, new BigNumber(100));
     await customers.verifyCustomer(
@@ -189,7 +184,5 @@ describe('Customers wrapper', () => {
     assert.equal(logCustomerVerified.provider, kycProvider, 'kyc provider address wasnt found in event subscription');
     assert.equal(logCustomerVerified.role, 1, 'Role wasnt found in event subscription');
     await customers.unsubscribeAll();
-
   })
-
 });
