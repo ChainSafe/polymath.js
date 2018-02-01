@@ -44,7 +44,6 @@ describe('Compliance wrapper', () => {
     customers = await makeCustomers(web3Wrapper, polyToken, accounts[0]);
     compliance = await makeCompliance(web3Wrapper, customers, accounts[0]);
 
-
     securityToken = await makeSecurityTokenThroughRegistrar(
       web3Wrapper,
       polyToken,
@@ -56,8 +55,7 @@ describe('Compliance wrapper', () => {
       expiryTime,
     );
 
-
-    // Fund three accounts.
+    // Fund 5 accounts.
     await polyToken.generateNewTokens(
       new BigNumber(10).toPower(18).times(100000),
       accounts[0],
@@ -101,7 +99,6 @@ describe('Compliance wrapper', () => {
 
     //the callback is passed into the filter.watch function  and is operated on when a new event comes in
     const logNewTemplateProposalArgsPromise = new Promise((resolve, reject) => {
-
       subscriptionID2 = compliance.subscribe(eventName2, indexedFilterValues2, (err, log) => {
         if (err !== null) {
           reject(err);
@@ -135,7 +132,6 @@ describe('Compliance wrapper', () => {
       accounts[1],
       accounts[2],
       expiryTime,
-
     );
 
     // Propose Template
@@ -219,6 +215,7 @@ describe('Compliance wrapper', () => {
     await makeKYCProvider(customers, kycProvider);
 
     await makeLegalDelegate(polyToken, customers, accounts[1], accounts[2], expiryTime);
+
     const templateAddress = await makeTemplateWithFinalized(
       compliance,
       kycProvider,
@@ -250,7 +247,7 @@ describe('Compliance wrapper', () => {
     );
 
     //this make example does setSTO and proposeSTO, and we will test below
-    const offering = await makeSecurityTokenOffering(
+    await makeSecurityTokenOffering(
       web3Wrapper,
       polyToken,
       securityToken,
@@ -273,13 +270,11 @@ describe('Compliance wrapper', () => {
     let getAllOfferings = await compliance.getAllOfferingProposals(securityToken.address, 0)
     assert.equal(getAllOfferings[0], getSTO.stoContractAddress, "STO array of addresses not read properly");
 
-
     // Cancel Proposal
     await compliance.cancelSTOProposal(auditor, securityToken.address, 0);
 
     let logCancleContractProposal = await logCancleContractProposalArgsPromise;
     assert.equal(logNewContractProposal._securityToken, securityToken.address, 'ST address not picked up from LogCancleContractProposal event') //needs to be renamed from core
-
 
     const addressShouldBeZero = await compliance.getSTOAddressByProposal(securityToken.address, 0)
     assert.equal(addressShouldBeZero, 0, 'Proposal did not return zero, which it should have for being cancelled');
@@ -290,11 +285,12 @@ describe('Compliance wrapper', () => {
 
   it('LogTemplateCreated event test, subscribe, unsubscribe', async () => {
 
-    //subscribtion setup
+    //subscription setup
     let subscriptionID1 = null;
     const eventName1 = 'LogTemplateCreated';
     const indexedFilterValues1 = ["_creator"];
     const expiryTime = new BigNumber(web3.eth.getBlock('latest').timestamp).plus(10000);
+
     //the callback is passed into the filter.watch function, and is operated on when a new event comes in
     const logTemplateCreatedArgsPromise = new Promise((resolve, reject) => {
       subscriptionID1 = compliance.subscribe(eventName1, indexedFilterValues1, (err, log) => {
@@ -308,7 +304,8 @@ describe('Compliance wrapper', () => {
 
     await makeKYCProvider(customers, accounts[1]);
     await makeLegalDelegate(polyToken, customers, accounts[1], accounts[2], expiryTime);
-    const templateAddress = await makeTemplate(
+
+    await makeTemplate(
       compliance,
       accounts[1],
       accounts[2],
@@ -320,6 +317,5 @@ describe('Compliance wrapper', () => {
     assert.isAbove(logTemplateCreated._template.length, 20, 'template address wasnt found in event subscription');
     assert.equal(logTemplateCreated._offeringType, "offeringtype", 'offering type wasnt found in event subscription'); //'offeringtype' from make_examples.js
     await compliance.unsubscribe(subscriptionID1);
-
   })
 });
