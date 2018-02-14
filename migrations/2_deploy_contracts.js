@@ -2,7 +2,7 @@ const Compliance = artifacts.require('./Compliance.sol');
 const Customers = artifacts.require('./Customers.sol');
 const SecurityTokenRegistrar = artifacts.require('./SecurityTokenRegistrar.sol');
 
-const PolyToken = '0x96a62428509002a7ae5f6ad29e4750d852a3f3d7';
+const PolyToken = '0xf46a4e110b8f07d2a97b98884c7e3270d1bba2cb';
 //artifacts.require('./PolyTokenMock.sol');
 
 module.exports = (deployer, network) => {

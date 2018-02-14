@@ -11,16 +11,17 @@ import PolyToken from './PolyToken';
 import securityTokenArtifact from '../artifacts/SecurityToken.json';
 import bytes32Zero from '../bytes32Zero';
 import { numberToRole } from '../roles';
-import typeimport { v1String } from '../../../../Library/Caches/typescript/2.6/node_modules/@types/uuid/interfaces';
- {
+// import { v1String } from '../../../../Library/Caches/typescript/2.6/node_modules/@types/uuid/interfaces';
+import uuid from 'uuid/v4';
+import type {
   BlockRange,
-  EventCallback,
-  IndexedFilterValues,
-  Log,
-  SecurityTokenEventArgs,
-  TokenDetails,
-  PolyAllocation,
-  Shareholder,
+    EventCallback,
+    IndexedFilterValues,
+    Log,
+    SecurityTokenEventArgs,
+    TokenDetails,
+    PolyAllocation,
+    Shareholder,
 } from '../types';
 
 export type LogNewWhitelistedAddress = {
@@ -52,17 +53,17 @@ export default class SecurityToken extends ContractWrapper {
    */
   subscribe(
     eventName:
-    | 'LogTemplateSet'
-    | 'LogUpdatedComplianceProof'
-    | 'LogOfferingFactorySet'
-    | 'LogOfferingStarted'
-    | 'LogNewWhitelistedAddress'
-    | 'LogNewBlacklistedAddress'
-    | 'LogVoteToFreeze'
-    | 'LogTokenIssued'
-    | 'ChangeName'
-    | 'ChangeDecimals'
-    | 'ChangeTotalSupply',
+      | 'LogTemplateSet'
+      | 'LogUpdatedComplianceProof'
+      | 'LogOfferingFactorySet'
+      | 'LogOfferingStarted'
+      | 'LogNewWhitelistedAddress'
+      | 'LogNewBlacklistedAddress'
+      | 'LogVoteToFreeze'
+      | 'LogTokenIssued'
+      | 'ChangeName'
+      | 'ChangeDecimals'
+      | 'ChangeTotalSupply',
     indexedFilterValues: IndexedFilterValues,
     callback: EventCallback<SecurityTokenEventArgs>,
   ): string {
@@ -97,17 +98,17 @@ export default class SecurityToken extends ContractWrapper {
    */
   async getLogs(
     eventName:
-    | 'LogTemplateSet'
-    | 'LogUpdatedComplianceProof'
-    | 'LogOfferingFactorySet'
-    | 'LogOfferingStarted'
-    | 'LogNewWhitelistedAddress'
-    | 'LogNewBlacklistedAddress'
-    | 'LogVoteToFreeze'
-    | 'LogTokenIssued'
-    | 'ChangeName'
-    | 'ChangeDecimals'
-    | 'ChangeTotalSupply',
+      | 'LogTemplateSet'
+      | 'LogUpdatedComplianceProof'
+      | 'LogOfferingFactorySet'
+      | 'LogOfferingStarted'
+      | 'LogNewWhitelistedAddress'
+      | 'LogNewBlacklistedAddress'
+      | 'LogVoteToFreeze'
+      | 'LogTokenIssued'
+      | 'ChangeName'
+      | 'ChangeDecimals'
+      | 'ChangeTotalSupply',
     indexedFilterValues: IndexedFilterValues,
     blockRange?: BlockRange,
   ): Promise<Array<Log<SecurityTokenEventArgs>>> {
@@ -250,10 +251,10 @@ export default class SecurityToken extends ContractWrapper {
     newTotalSupply: BigNumber,
     issuerAddress: string,
   ): Promise<string | boolean> {
-    await this._contract.changeTotalSupply(newTotalSupply, { from : issuerAddress });
+    await this._contract.changeTotalSupply(newTotalSupply, { from: issuerAddress });
     if (newTotalSupply == await this.getTotalSupply()) {
       return true;
-    } 
+    }
     return "Only Owner of the Security Token can call this function before starting the offering";
   }
 
@@ -266,10 +267,10 @@ export default class SecurityToken extends ContractWrapper {
     newDecimals: number,
     issuerAddress: string,
   ): Promise<string | boolean> {
-    await this._contract.changeDecimals(newDecimals, { from : issuerAddress });
+    await this._contract.changeDecimals(newDecimals, { from: issuerAddress });
     if (newDecimals == await this.getDecimals()) {
       return true;
-    } 
+    }
     return "Only Owner of the Security Token can call this function before starting the offering";
   }
 
@@ -282,10 +283,10 @@ export default class SecurityToken extends ContractWrapper {
     newName: string,
     issuerAddress: string,
   ): Promise<string | boolean> {
-    await this._contract.changeName(newName, { from : issuerAddress });
+    await this._contract.changeName(newName, { from: issuerAddress });
     if (newName == await this.getName()) {
       return true;
-    } 
+    }
     return "Only Owner of the Security Token can call this function before starting the offering";
   }
 
@@ -352,7 +353,7 @@ export default class SecurityToken extends ContractWrapper {
       {
         from: owner,
         gas: 500000,
-    });
+      });
   }
 
   /**
@@ -430,7 +431,7 @@ export default class SecurityToken extends ContractWrapper {
   async voteToFreeze(shareHolderAddress: string, recipientAddress: string) {
     await this._contract.voteToFreeze(recipientAddress, {
       from: shareHolderAddress,
-      gas : 300000,
+      gas: 300000,
     });
   }
 
@@ -595,5 +596,5 @@ export default class SecurityToken extends ContractWrapper {
     });
   }
 
-  
+
 }

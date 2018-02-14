@@ -70,7 +70,7 @@ export default class SecurityTokenRegistrar extends ContractWrapper {
     owner: string,
     fee: BigNumber,
   ){
-    await this._contract.createNameSpace(nameSpace, owner, fee);
+    await this._contract.createNameSpace(nameSpace, owner, fee, { from: owner });
   }
 
   /**
@@ -79,7 +79,7 @@ export default class SecurityTokenRegistrar extends ContractWrapper {
    * @param owner      Owner for this name space
    * @param fee        Fee for this name space
    */
-  async createNameSpace(
+  async changeNameSpace(
     nameSpace: string,
     owner: string,
     fee: BigNumber,
@@ -91,6 +91,7 @@ export default class SecurityTokenRegistrar extends ContractWrapper {
    * Creates a security token and stores it in the security token registry. Returns a promise of true it the security token was successfully created. This is done by event watching for the event {@link LogNewSecurityToken()}.
    *
    * @param creator The address from which the token is created
+   * @param nameSpaceName Name space for this security token
    * @param name Name of the security token
    * @param ticker Ticker name of the security
    * @param totalSupply Total amount of tokens being created
@@ -105,8 +106,8 @@ export default class SecurityTokenRegistrar extends ContractWrapper {
    * @return The security token created
    */
   async createSecurityToken(
-    nameSpaceName: string,
     creator: string,
+    nameSpaceName: string,
     name: string,
     ticker: string,
     totalSupply: BigNumber,
@@ -137,7 +138,7 @@ export default class SecurityTokenRegistrar extends ContractWrapper {
       throw new Error('createSecurityToken couldn\'t find an event log.');
     }
 
-    const address = logs[0].args.securityTokenAddress;
+    const address = logs[0].args._securityTokenAddress;
 
     if (!address) {
       throw new Error('createSecurityToken couldn\'t get security token address.');
@@ -178,8 +179,8 @@ export default class SecurityTokenRegistrar extends ContractWrapper {
    * @param ticker The security token ticker
    * @return The security token address
    */
-  async getSecurityTokenAddress(ticker: string): Promise<string> {
-    return this._contract.getSecurityTokenAddress.call(ticker);
+  async getSecurityTokenAddress(nameSpace: string, ticker: string): Promise<string> {
+    return this._contract.getSecurityTokenAddress.call(nameSpace, ticker);
   }
 
   /**

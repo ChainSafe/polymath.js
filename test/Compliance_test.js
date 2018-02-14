@@ -20,6 +20,8 @@ import {
 } from './util/make_examples';
 import { makeWeb3Wrapper, makeWeb3 } from './util/web3';
 import { fakeAddress, fakeBytes32 } from './util/fake';
+import { pk }  from './util/testprivateKey';
+
 
 const { assert } = chai;
 
@@ -36,17 +38,19 @@ describe('Compliance wrapper', () => {
   let registrar;
 
   before(async () => {
-    //accounts[0] = owner
+    accounts = await web3Wrapper.getAvailableAddressesAsync();
+        //accounts[0] = owner
     //accounts[1] = kyc
     //accounts[2] = legal delegate
-
-    accounts = await web3Wrapper.getAvailableAddressesAsync();
   });
 
   beforeEach(async () => {
     polyToken = await makePolyToken(web3Wrapper, accounts[0]);
     customers = await makeCustomers(web3Wrapper, polyToken, accounts[0]);
     compliance = await makeCompliance(web3Wrapper, customers, accounts[0]);
+
+    const nameSpaceOwner = accounts[6];
+
 
 
     securityToken = await makeSecurityTokenThroughRegistrar(
@@ -57,6 +61,7 @@ describe('Compliance wrapper', () => {
       accounts[0],
       accounts[1],
       expiryTime,
+      nameSpaceOwner,
     );
 
 
@@ -83,9 +88,14 @@ describe('Compliance wrapper', () => {
     );
   });
 
+
+
   it('createTemplate', async () => {
+    const privKeyTest = pk.account_0;
     await makeKYCProvider(customers, accounts[1], expiryTime);
-    await makeLegalDelegate(polyToken, customers, accounts[1], accounts[2], expiryTime);
+    await makeLegalDelegate(polyToken, customers, accounts[1], accounts[2], expiryTime, privKeyTest);
+    console.log("makeLegalDelegateWork")
+
     const templateAddress = (await makeTemplate(
       compliance,
       accounts[1],

@@ -3,6 +3,8 @@
 import BigNumber from 'bignumber.js';
 import contract from 'truffle-contract';
 import { Web3Wrapper } from '@0xproject/web3-wrapper';
+import {web3StringToBytes32, signData} from './signData';
+
 
 import {
   Compliance,
@@ -19,7 +21,7 @@ import polyTokenArtifact from '../../src/artifacts/PolyTokenMock.json';
 import securityTokenArtifact from '../../src/artifacts/SecurityToken.json';
 import securityTokenRegistrarArtifact from '../../src/artifacts/SecurityTokenRegistrar.json';
 import TemplateArtifact from '../../src/artifacts/Template.json';
-import securityTokenOfferingArtifact from '../../src/artifacts/STOContract.json';
+import securityTokenOfferingArtifact from '../../src/artifacts/SimpleCappedOffering.json';
 
 export async function makePolyToken(web3Wrapper: Web3Wrapper, account: string) {
   const contractTemplate = contract(polyTokenArtifact);
@@ -119,17 +121,54 @@ export const makeLegalDelegate = async (
   kycProvider: string,
   legalDelegate: string,
   expiryTime: BigNumber,
+  pk_customer1: string,
 ) => {
+
   await polyToken.approve(legalDelegate, customers.address, 100);
-  await customers.verifyCustomer(
+
+  let nonce = 1;
+  const jurisdiction0 = 'US';
+  const jurisdiction0_0 = 'CA';
+  const customerInvestorRole = 2;
+  const sig = signData(customers.address, kycProvider, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, pk_customer1);
+
+
+
+  const r = `0x${sig.r.toString('hex')}`;
+  const s = `0x${sig.s.toString('hex')}`;
+  const v = sig.v;
+  console.log(r);
+  console.log(s);
+  console.log(v);
+
+  let isVerify = await customers.verifyCustomer(
     kycProvider,
     legalDelegate,
-    'US',
-    'CA',
-    'delegate',
+    (jurisdiction0),
+    (jurisdiction0_0),
+    customerInvestorRole,
     true,
-    expiryTime,
+    expiryTime, // 2 days more than current time
+    nonce,
+    v,
+    r,
+    s,
+    {
+      from: kycProvider,
+    },
   );
+
+  console.log(isVerify +"yayayaY");
+
+  // await customers.verifyCustomer(
+  //   // kycProvider,
+  //   legalDelegate,
+  //   'US',
+  //   'CA',
+  //   'delegate',
+  //   true,
+  //   expiryTime,
+  // );
 };
 
 export const makeTemplate = async (
@@ -301,9 +340,10 @@ export async function makeSecurityTokenThroughRegistrar(
   polyToken: PolyToken,
   customers: Customers,
   compliance: Compliance,
-  account: string,
+  creatorAccount: string,
   hostAccount: string,
   currentBlockTime: number,
+  nameSpaceOwnerAccount: string,
 ) {
   const contractTemplate = contract(securityTokenRegistrarArtifact);
   contractTemplate.setProvider(web3Wrapper.getCurrentProvider());
@@ -314,20 +354,26 @@ export async function makeSecurityTokenThroughRegistrar(
     compliance.address,
     {
       gas: 15000000,
-      from: account,
+      from: creatorAccount,
     },
   );
+
   const registrar = new SecurityTokenRegistrar(web3Wrapper, instance.address);
 
   await registrar.initialize();
 
+  const nameSpaceName = "TESTNSN";
+  const nameSpaceOwner = nameSpaceOwnerAccount;
+  const nameSpaceFee = 10;
+
   // Start creating security token
-  const creator = account
+  const creator = creatorAccount
+
   const name = 'FUNTOKEN';
   const ticker = 'FUNT';
   const totalSupply = 1234567;
   const decimals = 8;
-  const owner = account
+  const owner = creatorAccount
   const host = hostAccount
   const fee = 1000;
   const type = 1;
@@ -338,16 +384,21 @@ export async function makeSecurityTokenThroughRegistrar(
   // Fund two accounts.
   await polyToken.generateNewTokens(
     new BigNumber(10).toPower(18).times(100000),
-    account,
+    creatorAccount,
   );
   await polyToken.generateNewTokens(
     new BigNumber(10).toPower(18).times(100000),
     hostAccount,
   );
 
-  await polyToken.approve(owner, registrar.address, fee);
+
+  await polyToken.approve(owner, registrar.address, (fee + nameSpaceFee));
+
+  await registrar.createNameSpace(nameSpaceName, nameSpaceOwner, nameSpaceFee);
+
   await registrar.createSecurityToken(
     creator,
+    nameSpaceName,
     name,
     ticker,
     totalSupply,
@@ -367,7 +418,7 @@ export async function makeSecurityTokenThroughRegistrar(
     { fromBlock: 1 },
   );
   let tickerLog =   logs[0].args.ticker;
-  let securityTokenAddress = await registrar.getSecurityTokenAddress(ticker);
+  let securityTokenAddress = await registrar.getSecurityTokenAddress(nameSpaceName, ticker);
 
   const securityTokenThroughRegistrar = new SecurityToken(
     web3Wrapper,
@@ -375,6 +426,7 @@ export async function makeSecurityTokenThroughRegistrar(
   );
 
   await securityTokenThroughRegistrar.initialize();
+
   return securityTokenThroughRegistrar;
 }
 
